@@ -9,6 +9,7 @@
   --mainGrey: rgb(238, 238, 238);
 }
 
+
 body {
   font-family: "Kaushan Script", cursive;
   background: var(--mainWhite);

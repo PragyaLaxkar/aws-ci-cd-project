@@ -1,0 +1,27 @@
+version: 0.2
+
+env:
+  parameter-store:
+    DOCKER_REGISTRY_USERNAME: /shopping-website/docker-credentials/username
+    DOCKER_REGISTRY_PASSWORD: /shopping-website/docker-credentials/password
+    DOCKER_REGISTRY_URL: /shopping-website/docker-registry/url
+
+phases:
+  install: 
+    runtime-versions:
+      nodejs: 18  # or any other version
+    commands:
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+  pre_build:
+    commands:
+      - echo Logging in to Docker registry...
+      - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_URL
+  build:
+    commands:
+      - echo "Building docker image..."
+      - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/shopping-website:latest" .
+      - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/shopping-website:latest"
+  post_build:
+    commands:
+      - echo "Build is successful"
